@@ -67,6 +67,19 @@ public class ListPeopleController {
             stage.setTitle("Create People");
             stage.setScene(scene);
             stage.show();
+            insertButton.setDisable(true);
+            updateButton.setDisable(true);
+            deleteButton.setDisable(true);
+            stage.setOnCloseRequest(event -> {
+                insertButton.setDisable(false);
+                updateButton.setDisable(false);
+                deleteButton.setDisable(false);
+                try {
+                    loadPeopleFromServer();
+                } catch (IOException e) {
+                    error("An error has occurred when trying to connect to the server");
+                }
+            });
         } catch (IOException e) {
             error("Couldn't load form", e.getMessage());
         }
