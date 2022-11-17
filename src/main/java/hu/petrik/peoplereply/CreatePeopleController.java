@@ -2,16 +2,13 @@ package hu.petrik.peoplereply;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-public class CreatePeopleController {
+public class CreatePeopleController extends Controller {
     @FXML
     private TextField nameField;
     @FXML
@@ -23,7 +20,8 @@ public class CreatePeopleController {
 
     @FXML
     private void initialize() {
-        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 200, 30);
+        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 200, 30);
         ageField.setValueFactory(valueFactory);
     }
 
@@ -40,27 +38,23 @@ public class CreatePeopleController {
             warning("Email is required");
             return;
         }
+        // TODO: validate email format
         Person newPerson = new Person(0, name, email, age);
         Gson converter = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         String json = converter.toJson(newPerson);
-        try{
+        try {
             Response response = RequestHandler.post(App.BASE_URL, json);
-            if(response.getResponseCode()==201){
-                warning("Person added");
+            if (response.getResponseCode() == 201) {
+                warning("Person added!");
                 nameField.setText("");
                 emailField.setText("");
                 ageField.getValueFactory().setValue(30);
-            }else{
-
+            } else {
+                // TODO: error
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void warning(String headerText) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setHeaderText(headerText);
-        alert.showAndWait();
-    }
 }

@@ -13,10 +13,14 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Optional;
 
-public class ListPeopleController {
+public class ListPeopleController extends Controller {
 
     @FXML
-    private Button insertButton, updateButton, deleteButton;
+    private Button insertButton;
+    @FXML
+    private Button updateButton;
+    @FXML
+    private Button deleteButton;
     @FXML
     private TableView<Person> peopleTable;
     @FXML
@@ -28,20 +32,15 @@ public class ListPeopleController {
 
     @FXML
     private void initialize() {
-
+        // getName() függvény eredményét írja ki
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         ageCol.setCellValueFactory(new PropertyValueFactory<>("age"));
-
         Platform.runLater(() -> {
             try {
                 loadPeopleFromServer();
             } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("ERROR!");
-                alert.setHeaderText("Couldn't get data from server");
-                alert.setContentText(e.getMessage());
-                alert.showAndWait();
+                error("Couldn't get data from server", e.getMessage());
                 Platform.exit();
             }
         });
@@ -77,11 +76,11 @@ public class ListPeopleController {
                 try {
                     loadPeopleFromServer();
                 } catch (IOException e) {
-                    error("An error has occurred when trying to connect to the server");
+                    error("An error occurred while communicating with the server");
                 }
             });
         } catch (IOException e) {
-            error("Couldn't load form", e.getMessage());
+            error("Could not load form", e.getMessage());
         }
     }
 
@@ -94,45 +93,28 @@ public class ListPeopleController {
         int selectedIndex = peopleTable.getSelectionModel().getSelectedIndex();
         if (selectedIndex == -1) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("pls select a person from a list");
+            alert.setHeaderText("Please select a person from the list first");
             alert.show();
             return;
         }
 
         Person selected = peopleTable.getSelectionModel().getSelectedItem();
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setHeaderText(String.format("Are you sure want to delete %s?",selected.getName()));
+        confirmation.setHeaderText(String.format("Are you sure you want to delete %s?", selected.getName()));
         Optional<ButtonType> optionalButtonType = confirmation.showAndWait();
-        if (optionalButtonType.isEmpty()){
-            System.out.println("Ismeretlen probléma történt");
+        if (optionalButtonType.isEmpty()) {
+            System.err.println("Unknown error occurred");
             return;
         }
-        ButtonType clickButton = optionalButtonType.get();
-        if (clickButton.equals(ButtonType.OK)){
+        ButtonType clickedButton = optionalButtonType.get();
+        if (clickedButton.equals(ButtonType.OK)) {
             String url = App.BASE_URL + "/" + selected.getId();
             try {
                 RequestHandler.delete(url);
+                loadPeopleFromServer();
             } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setHeaderText("An error occured while communicating with the server");
-                alert.setContentText(e.getMessage());
-                alert.show();
+                error("An error occurred while communicating with the server");
             }
         }
-        try {
-            loadPeopleFromServer();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    private void error(String headerText){
-        error(headerText, "");
-    }
-
-    private void error(String headerText, String contextText){
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setHeaderText(headerText);
-        alert.setContentText(contextText);
-        alert.showAndWait();
     }
 }
