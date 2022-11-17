@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class App extends Application {
+    //TODO Fix api
     static String BASE_URL = "https://retoolapi.dev/cRJhEP/people";
     @Override
     public void start(Stage stage) throws IOException {
